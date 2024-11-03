@@ -8,8 +8,15 @@
     },
     "permissions": [
         "webRequest",
+        "webNavigation",
         "notifications",
         "tabs"
+    ],
+    "content_scripts": [
+        {
+          "matches": ["<all_urls>"],
+          "js": ["common/content_script.js"]
+        }
     ],
     "host_permissions": [
          "*://*/*"
