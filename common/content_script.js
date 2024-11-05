@@ -1,81 +1,74 @@
-// Listen for messages from the background script
+console.log("Content script successfully injected and running on https://the-internet.herokuapp.com/login");
+
+// One-time injection flag
+let hasInjected = false;
+
+// Listen for messages from background.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "phishingDetected") {
-        injectFakeData();
-        autoSubmitForm();
-        sendResponse({ status: "Fake data submitted" });
-    } else if (message.action === "displayThreat") {
-        showInPagePopup(message.url);
-        sendResponse({ status: "Popup displayed" });
+    console.log("Received message in content script:", message);
+
+    if (message.action === "checkLoginForm" && !hasInjected) {
+        console.log("Starting form detection and injection process...");
+        hasInjected = true; // Set flag to true to prevent repeated injections
+
+        // Adding a slight delay to ensure the page elements are fully loaded
+        setTimeout(() => {
+            detectAndInjectLoginForms();
+            setTimeout(checkPageAfterSubmission, 3000); // Adjust delay as needed
+            sendResponse({ status: "Form check initiated" });
+        }, 500); // 500ms delay
+    } else if (hasInjected) {
+        console.log("Injection has already been performed on this page load.");
     }
 });
 
-// Inject fake data into form fields
-function injectFakeData() {
+// Function to detect login forms and inject fake data
+function detectAndInjectLoginForms() {
     const fakeEmail = "fakeuser@example.com";
     const fakePassword = "FakePassword123!";
 
-    // Fill text and email input fields with fake data
-    document.querySelectorAll("input[type='email'], input[type='text']").forEach(input => {
+    console.log("Attempting to find email or text input fields...");
+
+    // Find email or text fields and inject fake data
+    let emailInjected = false;
+    document.querySelectorAll("input[type='text']").forEach(input => {
+        console.log("Injecting fake email/text:", fakeEmail);
         input.value = fakeEmail;
+        emailInjected = true;
     });
-
-    // Fill password fields with fake data
-    document.querySelectorAll("input[type='password']").forEach(input => {
-        input.value = fakePassword;
-    });
-
-    console.log("Fake data injected!");
-}
-
-// Automatically submit the form
-function autoSubmitForm() {
-    const form = document.querySelector("form");
-    if (form) {
-        form.submit();
-        console.log("Fake form submitted!");
+    if (!emailInjected) {
+        console.warn("No email/text fields found for injection.");
     }
+
+    console.log("Attempting to find password input fields...");
+
+    // Find password fields and inject fake password
+    let passwordInjected = false;
+    document.querySelectorAll("input[type='password']").forEach(input => {
+        console.log("Injecting fake password:", fakePassword);
+        input.value = fakePassword;
+        passwordInjected = true;
+    });
+    if (!passwordInjected) {
+        console.warn("No password fields found for injection.");
+    }
+
+    console.log("Form fields populated with fake data. Please submit the form manually.");
 }
 
-// Function to display an in-page popup for threat alerts
-function showInPagePopup(url) {
-    // Check if a popup already exists to avoid duplicates
-    if (document.getElementById("threatPopupOverlay")) return;
-
-    // Create overlay div
-    const overlay = document.createElement("div");
-    overlay.id = "threatPopupOverlay";
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    overlay.style.display = "flex";
-    overlay.style.alignItems = "center";
-    overlay.style.justifyContent = "center";
-    overlay.style.zIndex = "1000";
-
-    // Create popup content
-    const popup = document.createElement("div");
-    popup.style.backgroundColor = "white";
-    popup.style.padding = "20px";
-    popup.style.borderRadius = "8px";
-    popup.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-    popup.innerHTML = `
-        <h2 style="color: red;">Threat Alert</h2>
-        <p>The URL <strong>${url}</strong> has been identified as a potential threat.</p>
-        <button id="closePopupBtn">OK</button>
-    `;
-
-    // Append popup to overlay
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
-
-    // Close popup on button click
-    document.getElementById("closePopupBtn").addEventListener("click", () => {
-        document.body.removeChild(overlay);
-    });
-
-    console.log("In-page threat alert popup displayed!");
+// Function to check if the page after submission has phishing indicators
+function checkPageAfterSubmission() {
+    console.log("Checking page after submission for phishing indicators...");
+    
+    // Look for common phishing indicators
+    if (document.title.includes("Error") || 
+        document.body.innerText.includes("Your username is invalid!") ||
+        document.body.innerText.includes("Suspicious Activity") ||
+        document.body.innerText.includes("Page Not Found")) {
+        
+        alert("Warning: This site may be phishing. Fake login attempt failed.");
+        console.log("Phishing warning displayed.");
+    } else {
+        console.log("No phishing indicators detected.");
+    }
 }
