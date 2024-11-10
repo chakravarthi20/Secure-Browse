@@ -31,6 +31,7 @@
             "48": "asset/icon.png",
             "128": "asset/icon.png"
         }
-    }
+    },
+    "options_page": "options/options.html"
 
 }

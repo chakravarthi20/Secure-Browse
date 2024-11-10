@@ -7,7 +7,7 @@ console.log("Content script successfully injected and running.");
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Received message in content script:", message);
 
-    if (message.action === "checkLoginForm" && !hasInjected) {
+    if (message.action === "checkLoginForm") {
         console.log("Starting form detection and injection process...");
         //hasInjected = true; // Set flag to true to prevent repeated injections
 
@@ -108,4 +108,3 @@ function checkPageAfterSubmission() {
     // Remove the load event listener to prevent repeated checks
     //window.removeEventListener("load", checkPageAfterSubmission);
 }
-

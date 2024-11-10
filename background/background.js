@@ -233,4 +233,3 @@ function showCustomPopup(title, message) {
     // Use `updatePopupContent` in `popup.js` to modify content dynamically if needed
     // (e.g., by passing data via query params or using `chrome.runtime.sendMessage`)
 }
-
