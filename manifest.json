@@ -13,6 +13,7 @@
         "notifications",
         "tabs",
         "scripting",
+        "storage",
         "activeTab"
     ],
     "content_scripts": [
