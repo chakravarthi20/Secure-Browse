@@ -16,6 +16,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         alert(message.message); // Display the alert in the content script's context
         sendResponse({ status: 'alert displayed' });
     }
+
+    if (message.action === 'showBreachAlert') {
+        if (message.breaches && Array.isArray(message.breaches)) {
+            let alertMessage = `Breach details for domain: ${message.domain}\n\n`;
+            message.breaches.forEach(breach => {
+                const breachName = breach.name || 'Unknown Breach';
+                const breachDate = breach.date || 'Unknown Date';
+                const description = breach.description || 'No description available';
+                alertMessage += `Name: ${breachName}\nDate: ${breachDate}\nDescription: ${description}\n\n`;
+            });
+            alert(alertMessage); // Display the alert with the breach details
+            sendResponse({ status: 'alert displayed' }); // Respond back to the sender
+        }
+    }
+    return true;
 });
 
 
