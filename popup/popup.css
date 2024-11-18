@@ -57,3 +57,11 @@ p {
 #popup-close-btn:hover {
     background-color: darkred;
 }
+
+.dollar-sign {
+    color: green;
+    font-weight: bold;
+    margin-left: 0;
+}
+
+

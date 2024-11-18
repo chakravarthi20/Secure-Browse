@@ -4,8 +4,10 @@ body, html {
     width: 100%;
     height: 100%;
     overflow-x: hidden;
-    font-family: Arial, sans-serif;
+    
     color: #faf9f9;
+    font-family: 'Roboto', sans-serif; /* Change 'Roboto' to the font you select */
+    font-size: 0.5em; /* This makes the font size smaller. Adjust as needed (e.g., 0.8em, 0.75em) */
 }
 .background-overlay {
     position: relative;
@@ -142,3 +144,18 @@ input:checked + .slider:before {
     background-color: #ffffff; /* Change the dot color when switched on */
 }
 
+.dollar-sign {
+    color: green; /* Set the color to green */
+    display: inline-block; /* Use inline-block to control spacing */
+    margin: 0; /* Remove any margin */
+    padding: 0; /* Remove any padding */
+    font-size: inherit; /* Ensure it inherits parent font size */
+    line-height: 1; /* Set line height to 1 to eliminate spacing from line height */
+    vertical-align: baseline; /* Align to baseline of text */
+}
+
+.feature-title {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 0; /* Remove any gap between flex children */
+}
