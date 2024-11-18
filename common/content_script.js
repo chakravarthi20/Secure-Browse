@@ -1,38 +1,63 @@
 console.log("Content script successfully injected and running.");
 
-// One-time injection flag
-//let hasInjected = false;
-
 // Listen for messages from background.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Received message in content script:", message);
 
     if (message.action === "checkLoginForm") {
         console.log("Starting form detection and injection process...");
-        //hasInjected = true; // Set flag to true to prevent repeated injections
-
-        
-        // Adding a slight delay to ensure the page elements are fully loaded
         setTimeout(() => {
             detectAndInjectLoginForms();
-            //setTimeout(checkPageAfterSubmission, 3000); // Adjust delay as needed
             sendResponse({ status: "Form check initiated" });
-        }, 500); // 500ms delay
-    
-    } 
-    //else if (hasInjected) {
-    //     console.log("Injection has already been performed on this page load.");
-    // }
+        }, 500);
+    }
+    if (message.action === 'showAlert') {
+        console.log("Displaying alert with message:", message.message); // Log for debugging
+        alert(message.message); // Display the alert in the content script's context
+        sendResponse({ status: 'alert displayed' });
+    }
+
+    if (message.action === 'showBreachAlert') {
+        if (message.breaches && Array.isArray(message.breaches)) {
+            let alertMessage = `Breach details for domain: ${message.domain}\n\n`;
+            message.breaches.forEach(breach => {
+                const breachName = breach.name || 'Unknown Breach';
+                const breachDate = breach.date || 'Unknown Date';
+                const description = breach.description || 'No description available';
+                alertMessage += `Name: ${breachName}\nDate: ${breachDate}\nDescription: ${description}\n\n`;
+            });
+            alert(alertMessage); // Display the alert with the breach details
+            sendResponse({ status: 'alert displayed' }); // Respond back to the sender
+        }
+    }
+    return true;
 });
 
-// Function to detect login forms and inject fake data
+
+// Function to detect email input fields and trigger HIBP check
+function detectAndCheckEmail() {
+    const emailInputs = document.querySelectorAll("input[type='email'], input[type='text']");
+    emailInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            const emailValue = input.value.trim();
+            if (validateEmail(emailValue)) {
+                console.log(`Checking HIBP for email: ${emailValue}`);
+                chrome.runtime.sendMessage({ action: 'checkHibpBreaches', query: emailValue });
+            }
+        });
+    });
+}
+
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Function to detect and inject fake data
 function detectAndInjectLoginForms() {
     const fakeEmail = "fakeuser@example.com";
     const fakePassword = "FakePassword123!";
-
     console.log("Attempting to find email or text input fields...");
-
-    // Find email or text fields and inject fake data
     let emailInjected = false;
     document.querySelectorAll("input[type='text']").forEach(input => {
         console.log("Injecting fake email/text:", fakeEmail);
@@ -42,10 +67,7 @@ function detectAndInjectLoginForms() {
     if (!emailInjected) {
         console.warn("No email/text fields found for injection.");
     }
-
     console.log("Attempting to find password input fields...");
-
-    // Find password fields and inject fake password
     let passwordInjected = false;
     document.querySelectorAll("input[type='password']").forEach(input => {
         console.log("Injecting fake password:", fakePassword);
@@ -55,18 +77,13 @@ function detectAndInjectLoginForms() {
     if (!passwordInjected) {
         console.warn("No password fields found for injection.");
     }
-
     console.log("Form fields populated with fake data.");
-
-    // Ask user to confirm form submission
     if (confirm("Form fields have been populated with fake data. Do you want to submit the form?")) {
         const form = document.querySelector("form");
         if (form) {
             console.log("Fake form submitted automatically!");
             form.submit();
             checkPageAfterSubmission();
-            // Add an event listener to run the phishing check after the page reloads
-            //window.addEventListener("load", checkPageAfterSubmission);
         } else {
             console.log("No login form detected.");
         }
@@ -75,13 +92,9 @@ function detectAndInjectLoginForms() {
     }
 }
 
-// Function to check if the page after submission has phishing indicators
 function checkPageAfterSubmission() {
     console.log("Checking page after submission for phishing indicators...");
-
     const pageText = document.body.innerText;
-    
-    // Check for common phishing indicators
     if (pageText.includes("Invalid username or password") ||
         pageText.includes("Your username is invalid!") ||
         pageText.includes("Suspicious Activity") ||
@@ -104,7 +117,7 @@ function checkPageAfterSubmission() {
     } else {
         console.log("No phishing indicators detected.");
     }
-
-    // Remove the load event listener to prevent repeated checks
-    //window.removeEventListener("load", checkPageAfterSubmission);
 }
+
+// Initialize email detection on page load
+detectAndCheckEmail();
